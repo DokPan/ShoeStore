@@ -1,0 +1,124 @@
+﻿.orders-catalog {
+    font-family: 'Times New Roman', Times, serif !important;
+}
+
+    .orders-catalog .filters-panel {
+        background-color: #7FFF00;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .orders-catalog .filter-title {
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+    .orders-catalog .filter-actions {
+        margin-top: 15px;
+    }
+
+    .orders-catalog .orders-table {
+        background-color: #FFFFFF;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .orders-catalog .table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .orders-catalog .table th {
+            background-color: #00FA9A;
+            color: #333;
+            font-weight: bold;
+            padding: 15px;
+            border-bottom: 2px solid #7FFF00;
+        }
+
+        .orders-catalog .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .orders-catalog .table tbody tr:hover {
+            background-color: rgba(0, 250, 154, 0.1);
+        }
+
+    .orders-catalog .badge {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 0.85em;
+        padding: 5px 10px;
+    }
+
+    .orders-catalog .bg-primary {
+        background-color: #007bff !important;
+    }
+
+    .orders-catalog .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .orders-catalog .bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    .orders-catalog .list-unstyled {
+        margin: 0;
+        padding: 0;
+    }
+
+        .orders-catalog .list-unstyled li {
+            padding: 2px 0;
+        }
+
+    /* Модальное окно */
+    .orders-catalog .modal-content {
+        border-radius: 8px;
+        border: 2px solid #00FA9A;
+    }
+
+    .orders-catalog .modal-header {
+        background-color: #7FFF00;
+        color: #333;
+        border-bottom: 2px solid #00FA9A;
+    }
+
+    .orders-catalog .modal-title {
+        font-weight: bold;
+    }
+
+    .orders-catalog .form-select-sm {
+        max-width: 150px;
+        display: inline-block;
+        margin-left: 8px;
+    }
+
+@media (max-width: 768px) {
+    .orders-catalog .table-responsive {
+        overflow-x: auto;
+    }
+
+    .orders-catalog .table {
+        font-size: 14px;
+    }
+
+        .orders-catalog .table th,
+        .orders-catalog .table td {
+            padding: 8px 10px;
+        }
+
+    .orders-catalog .filter-actions .d-flex {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+
+    .orders-catalog .filter-actions .form-select {
+        max-width: 100% !important;
+    }
+}

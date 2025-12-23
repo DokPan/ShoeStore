@@ -1,0 +1,283 @@
+﻿@* 
+   Страница управления заказами пользователей
+   Отображает список заказов с различными уровнями доступа для клиентов и администраторов/менеджеров
+   Включает функционал фильтрации, изменения статусов и дат доставки
+*@
+
+@page
+@model ShoeStoreWeb.Pages.Orders.IndexModel
+@{
+    ViewData["Title"] = "Заказы";
+}
+
+<div class="container mt-4 orders-catalog">
+    @* Панель фильтров и заголовок *@
+    <div class="filters-panel mb-4">
+        <h2 class="filter-title">
+            <i class="fas fa-shopping-cart"></i>
+            @(Model.IsManagerOrAdmin ? "Все заказы" : "Мои заказы")
+        </h2>
+
+        @* Фильтр по статусам доступен только для администраторов и менеджеров *@
+        @if (Model.IsManagerOrAdmin)
+        {
+            <div class="filter-actions mt-3">
+                <form method="get" class="d-flex gap-2 align-items-center">
+                    <select asp-for="StatusFilter" class="form-select" style="max-width: 200px;">
+                        <option value="">Все статусы</option>
+                        <option value="Новый">Новый</option>
+                        <option value="Завершен">Завершен</option>
+                    </select>
+                    <button type="submit" class="btn btn-accent">Фильтровать</button>
+                    <a asp-page="" class="btn btn-secondary">Сбросить</a>
+                </form>
+            </div>
+        }
+    </div>
+
+    @* Отображение уведомлений об успешных операциях или ошибках *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @* Состояние при отсутствии заказов *@
+    @if (!Model.Orders.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+            <h4>Заказы не найдены</h4>
+            <p class="text-muted">@(Model.IsManagerOrAdmin ? "В системе пока нет заказов" : "У вас пока нет заказов")</p>
+        </div>
+    }
+    else
+    {
+        @* Таблица отображения заказов *@
+        <div class="orders-table">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>№ Заказа</th>
+                        @if (Model.IsManagerOrAdmin)
+                        {
+                            <th>Клиент</th> @* Столбец виден только администраторам/менеджерам *@
+                        }
+                        <th>Состав</th>
+                        <th>Дата заказа</th>
+                        <th>Дата доставки</th>
+                        <th>Статус</th>
+                        <th>Код получения</th>
+                        <th>Итоговая стоимость</th>
+                        @if (Model.IsManagerOrAdmin)
+                        {
+                            <th>Действия</th> @* Кнопки действий только для администраторов/менеджеров *@
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Цикл отображения каждого заказа *@
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>
+                                <strong>#@order.OrderId</strong> @* Номер заказа *@
+                            </td>
+                            @if (Model.IsManagerOrAdmin)
+                            {
+                                <td>@order.User?.FullName</td> @* Имя клиента *@
+                            }
+                            <td>
+                                @* Состав заказа (товары и количество) *@
+                                @if (order.OrderItems != null && order.OrderItems.Any())
+                                {
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach (var item in order.OrderItems)
+                                        {
+                                            <li>
+                                                <small>@item.Product?.Name × @item.Quantity шт.</small>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Нет товаров</span>
+                                }
+                            </td>
+                            <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td> @* Дата и время создания *@
+                            <td>
+                                @* Дата доставки с возможностью редактирования для администраторов *@
+                                @if (order.DeliveryDate.HasValue)
+                                {
+                                    <span>@order.DeliveryDate.Value.ToString("dd.MM.yyyy")</span>
+                                    @if (Model.IsManagerOrAdmin)
+                                    {
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editDeliveryDateModal"
+                                                data-orderid="@order.OrderId"
+                                                data-currentdate="@order.DeliveryDate.Value.ToString("yyyy-MM-dd")">
+                                            <i class="fas fa-edit"></i> @* Иконка редактирования *@
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Не указана</span>
+                                    @if (Model.IsManagerOrAdmin)
+                                    {
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editDeliveryDateModal"
+                                                data-orderid="@order.OrderId">
+                                            <i class="fas fa-plus"></i> @* Иконка добавления *@
+                                        </button>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @* Статус заказа с бейджем и возможностью изменения *@
+                                @if (order.Status != null)
+                                {
+                                    <span class="badge @GetStatusBadgeClass(order.Status.StatusName)">
+                                        @order.Status.StatusName
+                                    </span>
+                                    @if (Model.IsManagerOrAdmin)
+                                    {
+                                        @* Форма изменения статуса с AJAX-like поведением *@
+                                        <form method="post" asp-page-handler="UpdateStatus" class="d-inline ms-1">
+                                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                                            <select name="statusName" class="form-select form-select-sm d-inline" style="width: auto;"
+                                                    onchange="this.form.submit()">
+                                                <option value="Новый" selected="@(order.Status.StatusName == "Новый")">Новый</option>
+                                                <option value="Завершен" selected="@(order.Status.StatusName == "Завершен")">Завершен</option>
+                                            </select>
+                                        </form>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@order.PickupCode</span> @* Код получения *@
+                            </td>
+                            <td>
+                                @* Итоговая стоимость заказа *@
+                                @{
+                                    var total = Model.OrderTotals.ContainsKey(order.OrderId)
+                                    ? Model.OrderTotals[order.OrderId]
+                                    : 0;
+                                }
+                                <strong>@total.ToString("C")</strong>
+                            </td>
+                            @if (Model.IsManagerOrAdmin)
+                            {
+                                <td>
+                                    @* Кнопка редактирования даты доставки *@
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editDeliveryDateModal"
+                                            data-orderid="@order.OrderId"
+                                            data-currentdate="@order.DeliveryDate?.ToString("yyyy-MM-dd")">
+                                        <i class="fas fa-calendar-alt"></i> Дата
+                                    </button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @* Кнопка возврата на главную страницу *@
+    <div class="mt-4">
+        <a asp-page="/Index" class="btn btn-accent">
+            <i class="fas fa-arrow-left"></i> Вернуться к каталогу
+        </a>
+    </div>
+</div>
+
+@* Модальное окно изменения даты доставки (доступно только админам/менеджерам) *@
+@if (Model.IsManagerOrAdmin)
+{
+    <div class="modal fade" id="editDeliveryDateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Изменение даты доставки</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" asp-page-handler="UpdateDeliveryDate">
+                    <div class="modal-body">
+                        <input type="hidden" id="modalOrderId" name="orderId" />
+                        <div class="mb-3">
+                            <label for="deliveryDate" class="form-label">Новая дата доставки:</label>
+                            <input type="date" class="form-control" id="deliveryDate" name="deliveryDate" required
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" /> @* Минимальная дата - сегодня *@
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-accent">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        @* JavaScript для обработки модального окна и динамического поведения *@
+        document.addEventListener('DOMContentLoaded', function() {
+            const deliveryDateModal = document.getElementById('editDeliveryDateModal');
+            if (deliveryDateModal) {
+                @* Обработчик открытия модального окна *@
+                deliveryDateModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const orderId = button.getAttribute('data-orderid');
+                    const currentDate = button.getAttribute('data-currentdate');
+
+                    document.getElementById('modalOrderId').value = orderId;
+
+                    const dateInput = document.getElementById('deliveryDate');
+                    if (currentDate) {
+                        dateInput.value = currentDate; @* Установка текущей даты *@
+                    } else {
+                        @* Установка даты по умолчанию (через 7 дней) *@
+                        const defaultDate = new Date();
+                        defaultDate.setDate(defaultDate.getDate() + 7);
+                        dateInput.value = defaultDate.toISOString().split('T')[0];
+                    }
+                });
+            }
+
+            @* Автоматическая отправка формы при изменении статуса *@
+            document.querySelectorAll('select[name="statusName"]').forEach(select => {
+                select.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+        });
+    </script>
+}
+
+@functions {
+    @* Вспомогательная функция для определения CSS класса бейджа статуса *@
+    private string GetStatusBadgeClass(string statusName)
+    {
+        return statusName switch
+        {
+            "Новый" => "bg-primary",      @* Синий для новых заказов *@
+            "Завершен" => "bg-success",   @* Зеленый для завершенных заказов *@
+            _ => "bg-secondary"           @* Серый для других статусов *@
+        };
+    }
+}

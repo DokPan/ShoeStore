@@ -1,0 +1,116 @@
+﻿@*
+   Основной макет (layout) приложения
+   Содержит общую структуру HTML, навигацию, стили и скрипты
+   Используется всеми страницами для обеспечения единообразия интерфейса
+*@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ShoeStore.WebApp</title>
+
+    <!-- Подключение основных CSS библиотек -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ShoeStore.WebApp.styles.css" asp-append-version="true" />
+
+    <!-- Подключение Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Подключение кастомных CSS файлов -->
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/products.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Шапка приложения -->
+    <header class="layout-header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Логотип и название приложения -->
+                <div class="logo-container">
+                    <img src="~/images/Icon.png" alt="Логотип магазина обуви" class="logo"
+                         onerror="this.onerror=null; this.src='/images/logo.png';">
+                    <h1 class="app-title">Каталог товаров</h1>
+                </div>
+
+                <!-- Блок информации о пользователе -->
+                <div class="user-info">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-end">
+                                <!-- Имя пользователя -->
+                                <div class="user-name">@User.Identity.Name</div>
+                                <!-- Роль пользователя с цветовым обозначением -->
+                                <div class="user-role">
+                                    @{
+                                        // Определение цвета бейджа в зависимости от роли
+                                        var role = User.FindFirst("Role")?.Value;
+                                        var roleBadgeClass = role switch
+                                        {
+                                            "Администратор" => "bg-danger",
+                                            "Менеджер" => "bg-warning",
+                                            "Клиент" => "bg-success",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @roleBadgeClass">@role</span>
+                                </div>
+                            </div>
+
+                            <!-- Кнопки действий для авторизованного пользователя -->
+                            <div class="d-flex gap-2">
+                                <!-- Ссылка на страницу заказов -->
+                                <a asp-page="/Orders/Index" class="btn btn-accent btn-sm">
+                                    <i class="fas fa-shopping-cart"></i> Заказы
+                                </a>
+                                <!-- Форма выхода из системы -->
+                                <form method="post" asp-page="/Account/Logout" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-sign-out-alt"></i> Выйти
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Кнопка входа для неавторизованных пользователей -->
+                        <div>
+                            <a asp-page="/Account/Login" class="btn btn-accent">
+                                <i class="fas fa-sign-in-alt"></i> Войти
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основное содержимое страницы -->
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Подвал приложения -->
+    <footer class="border-top footer text-muted layout-footer">
+        <div class="container">
+            &copy; 2025 - ShoeStore.WebApp
+        </div>
+    </footer>
+
+    <!-- Подключение JavaScript библиотек -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Секция для дополнительных скриптов страниц -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

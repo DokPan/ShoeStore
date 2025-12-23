@@ -1,0 +1,255 @@
+﻿@* 
+   Главная страница каталога товаров (обуви)
+   Предоставляет интерфейс для фильтрации, поиска и просмотра товаров
+   Включает функционал оформления заказов с учетом ролей пользователей
+*@
+
+@page
+@using System.Security.Claims
+@model ShoeStoreWeb.Pages.IndexModel
+@{
+    ViewData["Title"] = "Каталог товаров";
+}
+
+<div class="container mt-4 products-catalog">
+    @* Секция фильтров для поиска и сортировки товаров *@
+    <section class="filters-section">
+        <form method="get" class="filter-form">
+            <div class="filter-grid">
+                @* Поле поиска по описанию товара *@
+                <div class="filter-group">
+                    <label class="filter-label">Поиск по описанию:</label>
+                    <input type="text" class="filter-input" name="Search"
+                           value="@Model.Search" placeholder="Введите часть описания...">
+                </div>
+
+                @* Фильтр по производителю (выпадающий список) *@
+                <div class="filter-group">
+                    <label class="filter-label">Производитель:</label>
+                    <select class="filter-select" name="ManufacturerId">
+                        <option value="">Все производители</option>
+                        @foreach (var manufacturer in Model.Manufacturers)
+                        {
+                            <option value="@manufacturer.ManufacturerId"
+                                    selected="@(Model.ManufacturerId == manufacturer.ManufacturerId)">
+                                @manufacturer.ManufacturerName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                @* Фильтр по максимальной цене *@
+                <div class="filter-group">
+                    <label class="filter-label">Цена не более:</label>
+                    <input type="number" class="filter-input" name="MaxPrice"
+                           value="@Model.MaxPrice" placeholder="Макс. цена"
+                           min="0" step="0.01">
+                </div>
+
+                @* Сортировка товаров по различным критериям *@
+                <div class="filter-group">
+                    <label class="filter-label">Сортировка:</label>
+                    <select class="filter-select" name="SortBy">
+                        <option value="name" selected="@(Model.SortBy == "name")">По названию (А-Я)</option>
+                        <option value="name_desc" selected="@(Model.SortBy == "name_desc")">По названию (Я-А)</option>
+                        <option value="supplier" selected="@(Model.SortBy == "supplier")">По поставщику</option>
+                        <option value="price" selected="@(Model.SortBy == "price")">По цене (возрастание)</option>
+                        <option value="price_desc" selected="@(Model.SortBy == "price_desc")">По цене (убывание)</option>
+                    </select>
+                </div>
+            </div>
+
+            @* Дополнительные фильтры и кнопки действий *@
+            <div class="filter-actions">
+                <div class="checkboxes">
+                    @* Чекбокс для фильтрации товаров со скидкой *@
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="OnlyWithDiscount" value="true"
+                               @(Model.OnlyWithDiscount ? "checked" : "")>
+                        <span>Только товары со скидкой</span>
+                    </label>
+                    @* Чекбокс для фильтрации товаров в наличии *@
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="OnlyInStock" value="true"
+                               @(Model.OnlyInStock ? "checked" : "")>
+                        <span>Только товары в наличии</span>
+                    </label>
+                </div>
+
+                <div class="filter-buttons">
+                    @* Кнопки применения и сброса фильтров *@
+                    <button type="submit" class="btn-filter btn-primary">Применить фильтры</button>
+                    <a href="/" class="btn-filter btn-secondary">Сбросить фильтры</a>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    @* Информация о количестве найденных товаров *@
+    <div class="results-info">
+        <div class="results-count">
+            Найдено товаров: <strong>@Model.Products.Count</strong>
+        </div>
+    </div>
+
+    @* Отображение сообщений об успехе или ошибке *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @* Основная сетка товаров *@
+    <main class="products-grid">
+        @* Состояние при отсутствии товаров *@
+        @if (!Model.Products.Any())
+        {
+            <div class="empty-state">
+                <h3 class="empty-title">Товары не найдены</h3>
+                <p class="empty-text">Попробуйте изменить параметры фильтрации</p>
+            </div>
+        }
+        else
+        {
+            @* Отображение карточек товаров *@
+            @foreach (var product in Model.Products)
+            {
+                <article class="product-card @(product.Discount > 15 ? "high-discount" : "")">
+                    @* Блок изображения товара *@
+                    <div class="product-image">
+                        @{
+                            // Определение источника изображения:
+                            // 1. Из базы данных (если есть)
+                            // 2. Заглушка /images/picture.png
+                            var hasImageInDb = product.ImageData != null && product.ImageData.Length > 0;
+                            var imageSrc = hasImageInDb
+                            ? $"data:image/jpeg;base64,{Convert.ToBase64String(product.ImageData)}"
+                            : "/images/picture.png";
+                        }
+
+                        <img src="@imageSrc"
+                             alt="@product.Name"
+                             onerror="this.onerror=null; this.src='/images/picture.png';">
+                    </div>
+
+                    @* Информационная часть карточки товара *@
+                    <div class="product-info">
+                        <div class="product-category">@product.CategoryName</div>
+                        <h2 class="product-name">@product.Name</h2>
+
+                        <div class="product-details">
+                            @* Детальная информация о товаре *@
+                            <div class="detail-item">
+                                <span class="detail-label">Артикул:</span>
+                                <span class="detail-value">@product.Article</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Описание:</span>
+                                <span class="detail-value">@(string.IsNullOrEmpty(product.Description) ? "нет описания" : product.Description)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Производитель:</span>
+                                <span class="detail-value">@product.ManufacturerName</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Поставщик:</span>
+                                <span class="detail-value">@product.SupplierName</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Единица измерения:</span>
+                                <span class="detail-value">@(string.IsNullOrEmpty(product.Unit) ? "не указано" : product.Unit)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Количество на складе:</span>
+                                <span class="detail-value">@(product.StockQuantity > 0 ? product.StockQuantity.ToString() : "Нет в наличии")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* Блок цены и кнопки заказа *@
+                    <div class="product-price">
+                        @* Отображение цены со скидкой (если есть) *@
+                        @if (product.Discount > 0)
+                        {
+                            <div class="price-row">
+                                <span class="price-label">Цена:</span>
+                                <span class="price-value original-price">@product.Price.ToString("C")</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">Со скидкой:</span>
+                                <span class="price-value discount-price">
+                                    @product.DiscountedPrice.ToString("C")
+                                </span>
+                            </div>
+                            <div class="discount-badge">-@product.Discount.ToString("0")%</div>
+                        }
+                        else
+                        {
+                            @* Отображение обычной цены *@
+                            <div class="price-row">
+                                <span class="price-label">Цена:</span>
+                                <span class="price-value">@product.Price.ToString("C")</span>
+                            </div>
+                        }
+
+                        @* Кнопка заказа с проверкой прав доступа *@
+                        <div class="order-btn mt-3">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                var role = User.FindFirstValue("Role");
+                                @if (role == "Клиент")
+                                {
+                                    @* Форма заказа для клиентов *@
+                                    <form method="post" asp-page-handler="Order">
+                                        <input type="hidden" name="productId" value="@product.ProductId" />
+                                        <button type="submit" class="btn btn-accent w-100">
+                                            <i class="fas fa-shopping-cart"></i> Заказать
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    @* Заблокированная кнопка для не-клиентов *@
+                                    <button class="btn btn-secondary w-100" disabled
+                                            title="Только клиенты могут создавать заказы">
+                                        <i class="fas fa-shopping-cart"></i> Заказать
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                @* Ссылка на страницу входа для неавторизованных пользователей *@
+                                <a asp-page="/Account/Login"
+                                   asp-route-returnUrl="@Url.Page("/Index")"
+                                   class="btn btn-accent w-100">
+                                    <i class="fas fa-shopping-cart"></i> Заказать
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        }
+    </main>
+</div>
+
+@section Scripts {
+    <script>
+        // Скрипт для улучшения UX - автофокус на поле поиска
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Страница каталога загружена');
+
+            const searchInput = document.querySelector('input[name="Search"]');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        });
+    </script>
+}

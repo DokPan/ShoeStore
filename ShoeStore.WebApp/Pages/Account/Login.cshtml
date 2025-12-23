@@ -1,0 +1,68 @@
+﻿@* 
+   Страница входа (аутентификации) пользователей
+   Предоставляет форму для ввода учетных данных
+   Поддерживает демо-аккаунты для тестирования
+*@
+
+@page
+@model ShoeStoreWeb.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Вход в систему";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="filters-panel">
+                <h2 class="filter-title text-center">
+                    <i class="fas fa-sign-in-alt"></i> Вход в систему
+                </h2>
+
+                @* Отображение ошибки аутентификации *@
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                @* Форма входа *@
+                <form method="post">
+                    @* Скрытое поле для возврата на предыдущую страницу после входа *@
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="mb-3">
+                        <label for="login" class="form-label">Логин:</label>
+                        <input type="text" class="form-control" id="login"
+                               asp-for="Login" required
+                               placeholder="admin или client"> @* Подсказка для тестовых аккаунтов *@
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль:</label>
+                        <input type="password" class="form-control" id="password"
+                               asp-for="Password" required
+                               placeholder="admin или client">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-accent">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </button>
+                    </div>
+
+                    @* Информация о тестовых аккаунтах *@
+                    <div class="text-center mt-3">
+                        <p class="mb-1">
+                            <small class="text-muted">
+                                Для теста используйте:<br>
+                                Логин: admin, Пароль: admin (Администратор)<br>
+                                Логин: client, Пароль: client (Клиент)
+                            </small>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

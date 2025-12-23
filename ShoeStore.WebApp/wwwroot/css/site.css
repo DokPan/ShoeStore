@@ -1,0 +1,34 @@
+:root {
+    --accent-color: #00FA9A;
+    --accent-dark: #7FFF00;
+    --text-color: #333;
+    --border-color: #ddd;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.table {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.form-control,
+.form-select {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.w-100 {
+    width: 100% !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.alert {
+    font-family: 'Times New Roman', Times, serif;
+    border-radius: 6px;
+}

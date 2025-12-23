@@ -1,0 +1,110 @@
+body {
+    font-family: 'Times New Roman', Times, serif !important;
+    background-color: #FFFFFF !important;
+}
+
+.layout-header {
+    background-color: #7FFF00 !important;
+    margin-bottom: 20px;
+}
+
+    .layout-header .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+    }
+
+    .layout-header .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .layout-header .logo {
+        max-height: 60px;
+        max-width: 150px;
+        height: auto;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .layout-header .app-title {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+
+    .layout-header .user-info {
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    .layout-header .user-name {
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .layout-header .user-role {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .layout-header .btn-accent {
+        background-color: #00FA9A !important;
+        color: #333 !important;
+        border: none;
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    .layout-header .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.2rem;
+    }
+
+.layout-footer {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+@media (max-width: 768px) {
+    .layout-header .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .layout-header .logo-container {
+        justify-content: center;
+    }
+
+    .layout-header .user-info {
+        width: 100%;
+    }
+
+    .layout-header .d-flex.gap-3 {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+
+    .layout-header .text-end {
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .layout-header .logo-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .layout-header .app-title {
+        font-size: 20px;
+    }
+
+    .layout-header .d-flex.gap-2 {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
